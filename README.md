@@ -1,5 +1,5 @@
 # Lifelong Language Learning With Adapter Based Transformers
-Continual Learning is important for real-world natural language processing applications, where computational systems are required to interact with continuous streams of  tasks and language over time.  When forced to adapt to new tasks and inputs, language models experience catastrophic forgetting. The current generative replay-based algorithms are not scalable to many tasks, and their performance may degrade from a change in the task order. In this paper, we propose a model based on network growth - a pre-trained Transformer with Adapter modules for each task - that sequentially learns new NLP tasks in various domains and prevents catastrophic forgetting without retraining the model from scratch. We train and maintain light weight  adapter modules sequentially for each task. Without increasing network growth by more than 15\% and avoiding replay and task order bias, the current design allows us to increase average task accuracy by 1.3\% over the  baseline models.
+Continual Learning is important for real-world natural language processing applications, where computational systems are required to interact with continuous streams of tasks and language over time.  When forced to adapt to new tasks and inputs, language models experience catastrophic forgetting. The current generative replay-based algorithms are not scalable to many tasks, and their performance may degrade from a change in the task order. In this paper, we propose a model based on network growth - a pre-trained Transformer with Adapter modules for each task - that sequentially learns new NLP tasks in various domains and prevents catastrophic forgetting without retraining the model from scratch. We train and maintain lightweight adapter modules sequentially for each task. Without increasing network growth by more than 15\% and avoiding replay and task order bias, the current design allows us to increase average task accuracy by 4.1\% over the baseline models.
 
 ## Dataset
 
@@ -8,6 +8,7 @@ Continual Learning is important for real-world natural language processing appli
 | Sentiment Analysis  | [SST](https://nlp.stanford.edu/sentiment/treebank.html) |
 | Semantic Role Labeling | [QA‑SRL](https://dada.cs.washington.edu/qasrl/) |
 | Goal-Oriented Dialogue | [WOZ](https://github.com/nmrksic/neural-belief-tracker/tree/master/data/woz) |
+| Amazon Review   | [AMAZON](https://drive.google.com/drive/u/0/folders/0Bz8a_Dbh9Qhbfll6bVpmNUtUcFdjYmF2SEpmZUZUcVNiMUw1TWN6RDV3a0JHT3kxLVhVR2M?resourcekey=0-TLwzfR2O-D2aPitmn5o9VQ) |
 
 In order to unify the format of all the dataset, we first ran the code in https://github.com/salesforce/decaNLP to get the tranformed dataset, and then converted them into Squad-like format. For the last 5 dataset, we converted them directly. All converted dataset are available [here](https://drive.google.com/file/d/1rWcgnVcNpwxmBI3c5ovNx-E8XKOEL77S/view?usp=sharing).
 
@@ -55,7 +56,7 @@ In order to unify the format of all the dataset, we first ran the code in https:
 
 If you want to train sst, srl and woz.en sequentially by our proposed method, run:
 ```bash
-./train.sh --seq_train_type lll --model_name gpt2 --n_gpus 8 --n_workers 75 --fp32 --n_train_epochs 10  --gen_lm_sample_percentage 0.00 --tasks sst srl woz.en --lm_lambda 0.0
+./train.sh --seq_train_type lll --model_name gpt2 --n_gpus 8 --n_workers 75 --fp32 --n_train_epochs 10  --gen_lm_sample_percentage 0.00 --tasks sst srl woz.en amazon --lm_lambda 0.0
 ```
 
 #### Outputs:
@@ -63,9 +64,9 @@ If you want to train sst, srl and woz.en sequentially by our proposed method, ru
 
 If you run:
 ```bash
-./train.sh --seq_train_type lll --model_name gpt2 --n_gpus 8 --n_workers 75 --fp32 --n_train_epochs 12  --gen_lm_sample_percentage 0.00 --tasks sst srl woz.en --lm_lambda 0.0
+./train.sh --seq_train_type lll --model_name gpt2 --n_gpus 8 --n_workers 75 --fp32 --n_train_epochs 12  --gen_lm_sample_percentage 0.00 --tasks sst srl woz.en amazon --lm_lambda 0.0
 ```
-Then the models will be dumped in the following directories: `$MODEL_ROOT_DIR/gpt2/lll/sst_srl_woz.en_0.2/sst`, `$MODEL_ROOT_DIR/gpt2/lll/sst_srl_woz.en_0.2/srl`, `$MODEL_ROOT_DIR/gpt2/lll/sst_srl_woz.en_0.2/woz.en`.
+Then the models will be dumped in the following directories: `$MODEL_ROOT_DIR/gpt2/lll/sst_srl_woz.en_amazon_0.0/sst`, `$MODEL_ROOT_DIR/gpt2/lll/sst_srl_woz.en_amazon_0.0/srl`, `$MODEL_ROOT_DIR/gpt2/lll/sst_srl_woz.en_amazon_0.0/woz.en`, `$MODEL_ROOT_DIR/gpt2/lll/sst_srl_woz.en_amazon_0.0/amazon`.
 
 
 ### Testing
@@ -74,7 +75,7 @@ Then the models will be dumped in the following directories: `$MODEL_ROOT_DIR/gp
 
 This example test the model trained on sst, srl and woz.en by lll method.
 ```bash
-./test.sh --seq_train_type lll --n_workers 75 --fp32 --gen_lm_sample_percentage 0.00 --n_train_epochs 12 --lm_lambda 0.0 --tasks sst srl woz.en
+./test.sh --seq_train_type lll --n_workers 75 --fp32 --gen_lm_sample_percentage 0.00 --n_train_epochs 10 --lm_lambda 0.0 --tasks sst srl woz.en amazon
 ```
 
 #### Outputs:
